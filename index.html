@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+
+</style>
+</head>
+<body>
+<h1>Standup Timer</h1>
+<p>Queue: <span id="people"></span></p>
+<p id="timer">
+<div id="controls">
+	<button onclick="startClicked()">Start</button>
+	<button onclick="shuffleClicked()">Shuffle</button>
+</div>
+</p>
+
+<script>
+let people = ["bhathiya", "nuwan", "harshana", "janaka", "kasun", "supun"];
+let totalTime = 1 * 60; // 15 minutes
+let endBefore = 5; // 5 seconds
+let perPerson = Math.floor(totalTime / people.length - endBefore);
+let tasks = [];
+
+function nextTask() {
+	if (tasks.length <= 0) {
+    	document.getElementById("timer").innerHTML = "Done";
+    } else {
+    	tasks.pop()(); // pop and run task.
+    }
+}
+
+function displayRemaining() {
+	document.getElementById("people").innerHTML = people.slice().reverse().join(", ");
+}
+
+function personCountDownTask(name) {
+	function tasklet() {
+		let countDown = new Date();
+		let newSeconds = (+countDown.getSeconds()) + perPerson;
+        countDown.setSeconds(newSeconds);
+        let countDownDate = countDown.getTime();
+        let x = setInterval(function() {
+          let now = new Date().getTime();
+          let distance = countDownDate - now;
+          let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          
+          if (distance < 0) {
+          	people.pop();
+            clearInterval(x);
+            displayRemaining();
+            nextTask();
+			return;
+          }
+		  document.getElementById("timer").innerHTML = name + " got " + minutes + "m " + seconds + "s ";
+        }, 500);       
+    }
+	return tasklet;
+}
+
+function createTasks() {
+	for (let i = 0; i < people.length; i++) {
+    	tasks.push(personCountDownTask(people[i]));
+    }
+}
+
+function shuffle(array) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+function startClicked() {
+	let x = document.getElementById("controls");
+	x.style.display = "none";
+	nextTask();
+}
+
+function shuffleClicked() {
+	shuffle(people);
+	displayRemaining();
+	tasks = [];
+	createTasks();
+}
+
+function main() {
+  shuffle(people);
+  createTasks();
+  displayRemaining();
+}
+
+main();
+</script>
+
+</body>
+</html>
